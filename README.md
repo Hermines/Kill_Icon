@@ -20,7 +20,7 @@
 
 ## 安装
 
-依赖 [Darktide Mod Framework]([https://github.com/Darktide-Mod-Framework/DMF](https://www.nexusmods.com/warhammer40kdarktide/mods/8))。
+依赖 [Darktide Mod Framework](https://www.nexusmods.com/warhammer40kdarktide/mods/8)。
 
 将本模组文件夹放入 DMF 的 `mods` 目录即可，启动游戏后在模组管理器中启用 `Kill Icon`。
 
