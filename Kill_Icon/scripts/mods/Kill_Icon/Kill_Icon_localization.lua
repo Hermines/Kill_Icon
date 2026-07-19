@@ -4,7 +4,7 @@ return {
         ["zh-cn"] = "击杀图标",
     },
     mod_description = {
-        en = "Display kill icons on enemy kills in Darktide. Uses the game's built-in icons.\n\n{#color(0,255,0)}Version v1.0{#reset()}  {#color(255,255,0)}Author: m4a1_death-Dawn{#reset()}",
+        en = "Display kill icons on enemy kills.",
         ["zh-cn"] = "在击杀敌人时显示击杀图标。",
     },
     -- 主开关
