@@ -22,8 +22,6 @@ Benefits of this approach: no need to run a local server, no image assets to pac
 
 Requires the [Darktide Mod Framework](https://www.nexusmods.com/warhammer40kdarktide/mods/8).
 
-Place this mod folder into DMF's `mods` directory. Launch the game and enable `Kill Icon` in the mod manager.
-
 ## Settings
 
 ### General Settings
