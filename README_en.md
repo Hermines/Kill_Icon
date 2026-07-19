@@ -16,7 +16,7 @@ Benefits of this approach: no need to run a local server, no image assets to pac
 - Different icons for normal and headshot kills, with an expanding ring effect on headshots.
 - Full enter / display / leave animations, with a multi-slot queue supporting consecutive kills.
 - Highly configurable (see the settings below).
-- English and Chinese localization.
+- Supports multiple languages.
 
 ## Installation
 
