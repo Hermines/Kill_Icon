@@ -140,12 +140,12 @@ return {
         ru = "Режим Custom HUD",
     },
     custom_hud_mode_tooltip = {
-        en = "Enable this option to allow the 「Custom HUD」 mod to manage the HUD layout.",
-        ja = "このオプションを有効化すると、「Custom HUD」モッドによるHUDレイアウトの管理を許可します。",
-        ko = "이 옵션을 활성화하면 「Custom HUD」 모드가 HUD 레이아웃을 관리하도록 허용합니다.",
-        ["zh-cn"] = "开启此选项可允许由“Custom HUD”模组管理HUD布局",
-        ["zh-tw"] = "開啟此選項可允許由「Custom HUD」模組管理HUD佈局",
-        ru = "Включите эту опцию, чтобы разрешить модулю «Custom HUD» управлять компоновкой HUD.",
+        en = "Enable this option to allow the 「Custom HUD」 mod to manage the HUD layout. Takes effect after restarting the game.",
+        ja = "このオプションを有効化すると、「Custom HUD」モッドによるHUDレイアウトの管理を許可します。ゲーム再起動後に有効になります。",
+        ko = "이 옵션을 활성화하면 「Custom HUD」 모드가 HUD 레이아웃을 관리하도록 허용합니다. 게임 재시작 후 적용됩니다.",
+        ["zh-cn"] = "开启此选项可允许由「Custom HUD」模组管理HUD布局，重启游戏后生效。",
+        ["zh-tw"] = "開啟此選項可允許由「Custom HUD」模組管理HUD佈局，重啟遊戲後生效。",
+        ru = "Включите эту опцию, чтобы разрешить модулю «Custom HUD» управлять компоновкой HUD. Вступает в силу после перезапуска игры.",
     },
     kill_icon_vertical_position = {
         en = "Icon Vertical Position",
