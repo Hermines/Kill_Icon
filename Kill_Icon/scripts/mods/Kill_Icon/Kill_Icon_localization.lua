@@ -131,6 +131,22 @@ return {
         ["zh-tw"] = "爆頭圖示顏色 - 藍",
         ru = "Цвет иконки хедшота - Синий",
     },
+    custom_hud_mode = {
+        en = "Custom HUD Mode",
+        ja = "Custom HUD モード",
+        ko = "Custom HUD 모드",
+        ["zh-cn"] = "Custom HUD 模式",
+        ["zh-tw"] = "Custom HUD 模式",
+        ru = "Режим Custom HUD",
+    },
+    custom_hud_mode_tooltip = {
+        en = "Enable this option to allow the 「Custom HUD」 mod to manage the HUD layout.",
+        ja = "このオプションを有効化すると、「Custom HUD」モッドによるHUDレイアウトの管理を許可します。",
+        ko = "이 옵션을 활성화하면 「Custom HUD」 모드가 HUD 레이아웃을 관리하도록 허용합니다.",
+        ["zh-cn"] = "开启此选项可允许由“Custom HUD”模组管理HUD布局",
+        ["zh-tw"] = "開啟此選項可允許由「Custom HUD」模組管理HUD佈局",
+        ru = "Включите эту опцию, чтобы разрешить модулю «Custom HUD» управлять компоновкой HUD.",
+    },
     kill_icon_vertical_position = {
         en = "Icon Vertical Position",
         ja = "アイコンの垂直位置",

@@ -117,6 +117,12 @@ return {
                         range = {0, 255},
                     },
                     {
+                        setting_id = "custom_hud_mode",
+                        tooltip = "custom_hud_mode_tooltip",
+                        type = "checkbox",
+                        default_value = false,
+                    },
+                    {
                         setting_id = "kill_icon_vertical_position",
                         type = "numeric",
                         default_value = 55,

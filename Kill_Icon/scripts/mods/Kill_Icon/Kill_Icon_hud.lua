@@ -79,10 +79,12 @@ KI.KillIconManager.show_icon = function(is_headshot)
         end
     end
 
-    -- 2. Compute icon left edge from horizontal position setting
-    local screen_width = UIWorkspaceSettings.screen.size[1]
-    local horiz_pos = KI:get("kill_icon_horizontal_position") or 50
-    local center_x = screen_width * (horiz_pos / 100) - ICON_ROOT_SIZE / 2
+    -- 2. Compute icon left edge offset relative to kill_icon_root
+    -- The newest slot targets offset 0 (at the parent's position).
+    -- Older active slots are shifted left by dynamic_spacing in step 3 below.
+    -- kill_icon_root's absolute position is managed either by Kill_Icon (custom_hud_mode OFF)
+    -- or by custom_hud (custom_hud_mode ON).
+    local center_x = 0
 
     -- 3. Shift all active (non-leaving) slots left by one position
     for i = 1, MAX_SLOTS do
@@ -102,16 +104,36 @@ KI.KillIconManager.show_icon = function(is_headshot)
     slot.leaving = false
 end
 
+-- Default base position computed from default settings (used as the initial
+-- position of kill_icon_root before update() runs, and as a fallback when
+-- custom_hud has not yet customized the position)
+local screen_width = UIWorkspaceSettings.screen.size[1]
+local screen_height = UIWorkspaceSettings.screen.size[2]
+local DEFAULT_HORIZ_POS = 50
+local DEFAULT_VERT_POS = 55
+local default_base_x = screen_width * (DEFAULT_HORIZ_POS / 100) - ICON_ROOT_SIZE / 2
+local default_base_y = (DEFAULT_VERT_POS / 100) * (screen_height - ICON_ROOT_SIZE)
+
 -- Scenegraph definition
 local scenegraph_definition = {
     screen = UIWorkspaceSettings.screen,
+    -- Parent scenegraph for all kill icon slots.
+    -- When custom_hud_mode is OFF, Kill_Icon positions this from settings.
+    -- When custom_hud_mode is ON, custom_hud can move this as a single unit.
+    kill_icon_root = {
+        horizontal_alignment = "left",
+        parent = "screen",
+        vertical_alignment = "top",
+        size = {ICON_ROOT_SIZE, ICON_ROOT_SIZE},
+        position = {default_base_x, default_base_y, 0},
+    },
 }
 
--- Create scenegraph entry per slot
+-- Create scenegraph entry per slot (parented to kill_icon_root so they move as a group)
 for i = 1, MAX_SLOTS do
     scenegraph_definition["icon_root_" .. i] = {
         horizontal_alignment = "left",
-        parent = "screen",
+        parent = "kill_icon_root",
         vertical_alignment = "top",
         size = {ICON_ROOT_SIZE, ICON_ROOT_SIZE},
         position = {0, 0, 0},
@@ -196,7 +218,10 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
     local size_scale = (KI:get("kill_icon_size") or 10) / 10
     local vert_pos = KI:get("kill_icon_vertical_position") or 0
     local screen_height = UIWorkspaceSettings.screen.size[2]
-    local y_pos = (vert_pos / 100) * (screen_height - ICON_ROOT_SIZE)
+    local screen_width = UIWorkspaceSettings.screen.size[1]
+    local horiz_pos = KI:get("kill_icon_horizontal_position") or 50
+    local base_x = screen_width * (horiz_pos / 100) - ICON_ROOT_SIZE / 2
+    local base_y = (vert_pos / 100) * (screen_height - ICON_ROOT_SIZE)
     local display_duration = (tonumber(KI:get("kill_icon_duration")) or 20) / 10
 
     local normal_r = KI:get("kill_icon_normal_color_r") or 255
@@ -207,7 +232,19 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
     local headshot_b = KI:get("kill_icon_headshot_color_b") or 0
     local transparency_factor = (KI:get("kill_icon_transparency") or 100) / 100
 
-    -- Update each slot
+    -- Update kill_icon_root base position.
+    -- When custom_hud_mode is OFF, Kill_Icon manages the base position from settings.
+    -- When custom_hud_mode is ON, custom_hud manages the base position, so we leave it untouched.
+    if not KI:get("custom_hud_mode") then
+        local kill_icon_root = self._ui_scenegraph["kill_icon_root"]
+        if kill_icon_root then
+            kill_icon_root.position[1] = base_x
+            kill_icon_root.position[2] = base_y
+            self._update_scenegraph = true
+        end
+    end
+
+    -- Update each slot (positions are relative to kill_icon_root)
     for i = 1, MAX_SLOTS do
         local slot = manager._slots[i]
         local icon_widget = self._widgets_by_name["kill_icon_" .. i]
@@ -244,7 +281,7 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
                 circle_widget.content.circle = nil
 
                 icon_root.position[1] = slot.current_x
-                icon_root.position[2] = y_pos
+                icon_root.position[2] = 0
                 self._update_scenegraph = true
             end
         else
@@ -262,7 +299,7 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
             slot.current_x = slot.current_x + (slot.target_x - slot.current_x) * dt * 10
 
             icon_root.position[1] = slot.current_x
-            icon_root.position[2] = y_pos
+            icon_root.position[2] = 0
             self._update_scenegraph = true
 
             -- Compute alpha
