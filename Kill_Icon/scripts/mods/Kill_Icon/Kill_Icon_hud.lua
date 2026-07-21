@@ -211,7 +211,6 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
 
     -- Animation params
     local enter_duration = 0.3
-    local fade_duration = 0.2
     local leave_duration = 0.2
 
     -- Settings
@@ -289,8 +288,8 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
             local elapsed = now_time - slot.start_time
             local is_headshot = slot.is_headshot
 
-            -- Trigger leave on timeout
-            if elapsed > display_duration + enter_duration then
+            -- Trigger leave on timeout (fade + slide happen together in leave branch)
+            if elapsed > display_duration then
                 slot.leaving = true
                 slot.leaving_start_time = now_time
             end
@@ -302,23 +301,12 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
             icon_root.position[2] = 0
             self._update_scenegraph = true
 
-            -- Compute alpha
+            -- Compute alpha (enter fade only; exit fade is handled by leave branch)
             local alpha = 255
             if elapsed < enter_duration then
                 local progress = elapsed / enter_duration
                 progress = 1 - (1 - progress) ^ 3
                 alpha = math.floor(255 * progress)
-            elseif elapsed > display_duration then
-                local fade_elapsed = elapsed - display_duration
-                if fade_elapsed >= fade_duration then
-                    slot.leaving = true
-                    slot.leaving_start_time = now_time
-                    alpha = 0
-                else
-                    local progress = fade_elapsed / fade_duration
-                    progress = 1 - (1 - progress) ^ 3
-                    alpha = math.floor(255 * (1 - progress))
-                end
             end
 
             -- Enter scale animation: 1.8 -> size_scale (ease-out)
