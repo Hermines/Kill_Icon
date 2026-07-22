@@ -32,6 +32,9 @@ for i = 1, MAX_SLOTS do
         current_x = 0,
         leaving = false,
         leaving_start_time = 0,
+        pending_leave = false,
+        leave_ready_time = 0,
+        leave_assigned_delay = 0,
     }
 end
 
@@ -102,6 +105,7 @@ KI.KillIconManager.show_icon = function(is_headshot)
     slot.target_x = center_x
     slot.current_x = center_x + 60
     slot.leaving = false
+    slot.pending_leave = false
 end
 
 -- Default base position computed from default settings (used as the initial
@@ -243,6 +247,31 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
         end
     end
 
+    -- Detect slots that newly reach the leave threshold this frame.
+    -- Assign staggered delays so leftmost slot leaves first, others follow.
+    local new_pending = {}
+    for i = 1, MAX_SLOTS do
+        local slot = manager._slots[i]
+        if slot.active and not slot.leaving and not slot.pending_leave then
+            local elapsed = now_time - slot.start_time
+            if elapsed > display_duration then
+                slot.pending_leave = true
+                slot.leave_ready_time = now_time
+                table.insert(new_pending, {index = i, target_x = slot.target_x})
+            end
+        end
+    end
+
+    if #new_pending > 0 then
+        table.sort(new_pending, function(a, b)
+            return a.target_x < b.target_x
+        end)
+        local stagger_delay = 0.03
+        for rank, entry in ipairs(new_pending) do
+            manager._slots[entry.index].leave_assigned_delay = (rank - 1) * stagger_delay
+        end
+    end
+
     -- Update each slot (positions are relative to kill_icon_root)
     for i = 1, MAX_SLOTS do
         local slot = manager._slots[i]
@@ -288,8 +317,9 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
             local elapsed = now_time - slot.start_time
             local is_headshot = slot.is_headshot
 
-            -- Trigger leave on timeout (fade + slide happen together in leave branch)
-            if elapsed > display_duration then
+            -- Check if staggered leave delay has elapsed
+            if slot.pending_leave and now_time - slot.leave_ready_time >= slot.leave_assigned_delay then
+                slot.pending_leave = false
                 slot.leaving = true
                 slot.leaving_start_time = now_time
             end
