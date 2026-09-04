@@ -43,9 +43,12 @@ KI.KillIconManager.show_icon = function(is_headshot)
     local manager = KI.KillIconManager
     local now_time = Managers.time:time("main")
 
-    -- Compute dynamic spacing from current icon size setting
-    local size_scale = (KI:get("kill_icon_size") or 10) / 10
-    local dynamic_spacing = ICON_ROOT_SIZE * size_scale - 20
+    -- Compute dynamic spacing from current icon size and spacing settings (stored as percent)
+    -- Spacing 100% = default (and maximum) spacing for the current icon size;
+    -- lower values pack the icons closer together
+    local size_scale = (KI.settings.kill_icon_size or 80) / 100
+    local spacing_scale = (KI.settings.kill_icon_spacing or 100) / 100
+    local dynamic_spacing = (ICON_ROOT_SIZE * size_scale - 20) * spacing_scale
 
     -- 1. Find a free slot
     local free_slot = nil
@@ -85,8 +88,8 @@ KI.KillIconManager.show_icon = function(is_headshot)
     -- 2. Compute icon left edge offset relative to kill_icon_root
     -- The newest slot targets offset 0 (at the parent's position).
     -- Older active slots are shifted left by dynamic_spacing in step 3 below.
-    -- kill_icon_root's absolute position is managed either by Kill_Icon (custom_hud_mode OFF)
-    -- or by custom_hud (custom_hud_mode ON).
+    -- kill_icon_root's absolute position is managed either by Kill_Icon (manage_icon_position ON)
+    -- or by external mods such as Custom HUD (manage_icon_position OFF).
     local center_x = 0
 
     -- 3. Shift all active (non-leaving) slots left by one position
@@ -122,8 +125,8 @@ local default_base_y = (DEFAULT_VERT_POS / 100) * (screen_height - ICON_ROOT_SIZ
 local scenegraph_definition = {
     screen = UIWorkspaceSettings.screen,
     -- Parent scenegraph for all kill icon slots.
-    -- When custom_hud_mode is OFF, Kill_Icon positions this from settings.
-    -- When custom_hud_mode is ON, custom_hud can move this as a single unit.
+    -- When manage_icon_position is ON, Kill_Icon positions this from settings.
+    -- When manage_icon_position is OFF, external mods such as Custom HUD can move this as a single unit.
     kill_icon_root = {
         horizontal_alignment = "left",
         parent = "screen",
@@ -218,27 +221,31 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
     local leave_duration = 0.2
 
     -- Settings
-    local size_scale = (KI:get("kill_icon_size") or 10) / 10
-    local vert_pos = KI:get("kill_icon_vertical_position") or 0
+    local size_scale = (KI.settings.kill_icon_size or 80) / 100
+    local vert_pos = KI.settings.kill_icon_vertical_position or 55
     local screen_height = UIWorkspaceSettings.screen.size[2]
     local screen_width = UIWorkspaceSettings.screen.size[1]
-    local horiz_pos = KI:get("kill_icon_horizontal_position") or 50
+    local horiz_pos = KI.settings.kill_icon_horizontal_position or 50
     local base_x = screen_width * (horiz_pos / 100) - ICON_ROOT_SIZE / 2
     local base_y = (vert_pos / 100) * (screen_height - ICON_ROOT_SIZE)
-    local display_duration = (tonumber(KI:get("kill_icon_duration")) or 20) / 10
+    local display_duration = KI.settings.kill_icon_duration or 2
 
-    local normal_r = KI:get("kill_icon_normal_color_r") or 255
-    local normal_g = KI:get("kill_icon_normal_color_g") or 255
-    local normal_b = KI:get("kill_icon_normal_color_b") or 255
-    local headshot_r = KI:get("kill_icon_headshot_color_r") or 255
-    local headshot_g = KI:get("kill_icon_headshot_color_g") or 0
-    local headshot_b = KI:get("kill_icon_headshot_color_b") or 0
-    local transparency_factor = (KI:get("kill_icon_transparency") or 100) / 100
+    -- Color settings are stored as { alpha, r, g, b } tables
+    local normal_color = KI.settings.kill_icon_normal_color or { 255, 216, 229, 207 }
+    local headshot_color = KI.settings.kill_icon_headshot_color or { 255, 255, 156, 6 }
+    local normal_r = normal_color[2]
+    local normal_g = normal_color[3]
+    local normal_b = normal_color[4]
+    local headshot_r = headshot_color[2]
+    local headshot_g = headshot_color[3]
+    local headshot_b = headshot_color[4]
+    local transparency_factor = (KI.settings.kill_icon_transparency or 100) / 100
 
     -- Update kill_icon_root base position.
-    -- When custom_hud_mode is OFF, Kill_Icon manages the base position from settings.
-    -- When custom_hud_mode is ON, custom_hud manages the base position, so we leave it untouched.
-    if not KI:get("custom_hud_mode") then
+    -- When manage_icon_position is ON, Kill_Icon manages the base position from settings.
+    -- When manage_icon_position is OFF, external mods (e.g. Custom HUD) manage the base
+    -- position, so we leave it untouched.
+    if KI.settings.manage_icon_position then
         local kill_icon_root = self._ui_scenegraph["kill_icon_root"]
         if kill_icon_root then
             kill_icon_root.position[1] = base_x
@@ -409,7 +416,7 @@ HudKillIcon.update = function(self, dt, t, ui_renderer, render_settings, input_s
 end
 
 HudKillIcon.draw = function(self, dt, t, ui_renderer, render_settings, input_service)
-    if not KI:get("kill_icon_enabled") then
+    if not KI.settings.kill_icon_enabled then
         return
     end
 

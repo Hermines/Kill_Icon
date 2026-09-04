@@ -53,7 +53,7 @@ end
 -- Attack result handler
 local function handle_attack_result(damage_profile, attacked_unit, attacking_unit, hit_weakspot, damage, attack_result, attack_type)
     -- Master switch
-    if not KI:get("enabled") then
+    if not KI.settings.enabled then
         return
     end
 
@@ -104,19 +104,19 @@ local function handle_attack_result(damage_profile, attacked_unit, attacking_uni
     local is_kill_headshot = hit_weakspot == true
 
     -- Target filter
-    local kill_target_setting = KI:get("kill_target") or "all"
+    local kill_target_setting = KI.settings.kill_target or "all"
     if not is_target_valid(breed_or_nil, kill_target_setting) then
         return
     end
 
     -- DoT kill icon toggle
-    local dot_icon_allowed = not (is_dot_damage and not KI:get("kill_dot_icon"))
+    local dot_icon_allowed = not (is_dot_damage and not KI.settings.kill_dot_icon)
 
     -- Companion kill icon toggle
-    local companion_kill_icon_allowed = not (is_companion_attack and not KI:get("companion_kill_icon_enabled"))
+    local companion_kill_icon_allowed = not (is_companion_attack and not KI.settings.companion_kill_icon_enabled)
 
     -- Show kill icon
-    if dot_icon_allowed and companion_kill_icon_allowed and KI:get("kill_icon_enabled") and KI.KillIconManager then
+    if dot_icon_allowed and companion_kill_icon_allowed and KI.settings.kill_icon_enabled and KI.KillIconManager then
         KI.KillIconManager.show_icon(is_kill_headshot)
     end
 end

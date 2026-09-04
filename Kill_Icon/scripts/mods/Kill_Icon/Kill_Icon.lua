@@ -3,6 +3,51 @@ local KI = get_mod("Kill_Icon")
 -- Load events module
 KI:io_dofile("Kill_Icon/scripts/mods/Kill_Icon/Kill_Icon_events")
 
+-- Sanitize settings left over from an older settings format.
+-- Old versions stored "kill_icon_duration" as a string ("10".."30") and "kill_icon_size"
+-- as 5-20. Invalid values are reset to the new defaults instead of being migrated.
+local stored_duration = KI:get("kill_icon_duration")
+if type(stored_duration) ~= "number" then
+    KI:set("kill_icon_duration", 2)
+end
+
+local stored_size = KI:get("kill_icon_size")
+if type(stored_size) ~= "number" or stored_size < 50 or stored_size > 200 then
+    KI:set("kill_icon_size", 80)
+end
+
+-- Validate icon spacing (percent); reset out-of-range values to the default.
+-- Values below 50% are discarded because icons would overlap
+local stored_spacing = KI:get("kill_icon_spacing")
+if type(stored_spacing) ~= "number" or stored_spacing < 50 or stored_spacing > 100 then
+    KI:set("kill_icon_spacing", 100)
+end
+
+-- Cached settings: the HUD reads them every frame, and DMF clones table values
+-- (colors) on every 'get' call, so read them once here and sync on change
+KI.settings = {
+    enabled                       = KI:get("enabled"),
+    companion_kill_icon_enabled   = KI:get("companion_kill_icon_enabled"),
+    kill_icon_enabled             = KI:get("kill_icon_enabled"),
+    kill_target                   = KI:get("kill_target"),
+    kill_dot_icon                 = KI:get("kill_dot_icon"),
+    kill_icon_duration            = KI:get("kill_icon_duration"),
+    kill_icon_size                = KI:get("kill_icon_size"),
+    kill_icon_spacing             = KI:get("kill_icon_spacing"),
+    kill_icon_transparency        = KI:get("kill_icon_transparency"),
+    kill_icon_normal_color        = KI:get("kill_icon_normal_color"),
+    kill_icon_headshot_color      = KI:get("kill_icon_headshot_color"),
+    manage_icon_position          = KI:get("manage_icon_position"),
+    kill_icon_vertical_position   = KI:get("kill_icon_vertical_position"),
+    kill_icon_horizontal_position = KI:get("kill_icon_horizontal_position"),
+}
+
+KI.on_setting_changed = function(setting_id)
+    if KI.settings[setting_id] ~= nil then
+        KI.settings[setting_id] = KI:get(setting_id)
+    end
+end
+
 -- HUD element config
 -- package declares the texture package required by the HUD element (auto-loaded by UIManager)
 -- scanner_display_view contains the headshot circle texture scanner_drill_wireframe_small
